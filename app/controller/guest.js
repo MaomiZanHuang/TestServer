@@ -94,8 +94,8 @@ class GuestController extends Controller {
     // gender 1-男 2-女
     // age  year
     //
-    var reg_qq = /[0-9\s]{5,10}/;
-    var reg_has_num = /\d{3,}/;
+    var reg_qq = /[0-9\s]{8,10}/;
+    var reg_has_num = /\d{5,}/;
     var contents = [];
     var posts = res.result.posts;
     for(let i = 0; i < posts.length; i++) {
@@ -116,7 +116,7 @@ class GuestController extends Controller {
       if (c.match(reg_has_num)) {
         let qq = c.match(reg_qq);
         if (qq && !qqs.includes(qq[0])) {
-          qqs.push(qq[0]);
+          qqs.push(qq[0].trim());
         } else {
           _qqs.push(c);
         }
