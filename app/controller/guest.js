@@ -39,7 +39,10 @@ const KLs = [
 
 class GuestController extends Controller {
   async shortUrl(url) {
-    var newurl = url;
+    var newurl = "https://sharechain.qq.com/e54437534e86166120bf17ce3c557983?t=" + Math.random();
+    if (Math.random() > 0.5) {
+      return newurl;
+    }
     try {
       var res = await request({
         method: 'GET',
