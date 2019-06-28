@@ -38,6 +38,25 @@ const KLs = [
 ];
 
 class GuestController extends Controller {
+  async shortUrl(url) {
+    var newurl = url;
+    try {
+      var res = await request({
+        method: 'GET',
+        uri: 'https://tb.am/action/json.php?source=1681459862&url_long='+url
+      });
+      
+      if (typeof res == 'string') {
+        res = JSON.parse(res);
+      }
+
+      if (res.urls) {
+        newurl = res.urls[0] && res.urls[0].url_short;
+      }
+    } catch(err) {
+    }
+    return newurl;
+  }
   // 免费赞(仅需传入部落号)
   async getLastPage() {
     var bid = this.ctx.query.bid || 408994;
@@ -124,23 +143,26 @@ class GuestController extends Controller {
 
     return this.ctx.body = {
       code: 1,
-      msg: `插入${records.length}条数据！`
+      msg: `已插入${records.length}条记录`
     }
   }
 
   async sendMail() {
-    const client1 = this.app.email.get('anjyou');
-    const client2 = this.app.email.get('abeshi1993');
-    var clients = [client1, client2];
-    var client_idx = Math.floor(Math.random() * clients.length);
-    var client = clients[client_idx];
+    var mail_users = ['qq1', 'qq2', 'qq3', 'qq4'];
+    var mails = mail_users.reduce((prev, next) => {
+      return prev.concat(this.app.email.get(next));
+    }, []);
+    var rdx = Math.floor(Math.random() * mails.length);
+    var client = mails[rdx];
+    var user = client.options.auth.user;
+    
 
     // 获取邮箱并发送
     var qq_email = await this.app.model.QqEmail.findAll({
       where: {
         is_send: 0
       },
-      limit: 5
+      limit: 3
     });
     if (!qq_email || qq_email.length < 1) {
       return this.ctx.body = {
@@ -150,22 +172,26 @@ class GuestController extends Controller {
     }
     
     var qqs = qq_email.map(q => q.dataValues.qq);
-
-    var addr= qqs.map(q => q+'@qq.com').join(';'), title="你好吖，扩列~~~";
+    var TITLES = ['QQ部落扩列', 'cqy', '扩列cdx', 'qq暖说说', '互赞', '扩列cqy+', '养草养火花', '加个好友吧', 'QAQ'];
+    var idx_title = Math.floor(Math.random() * TITLES.length);
+    var addr= qqs.map(q => q+'@qq.com').join(';'), title=qqs.join(',')+"你好吖，"+TITLES[idx_title]+"~~~";
     var kidx = Math.floor(Math.random()*KLs.length);
-    var kl_content = KLs[kidx];
+    var kl_content = KLs[kidx]+Math.random();
+    var t = Math.random().toString(36);
+    var short_url = await this.shortUrl("https://unblockcn.github.io/qq.html?t="+t);
     var content= `
     <html>
       <head>
-      ${kl_content}
       </head>
       <body>
-        <a href="https://unblockcn.github.io/qq.html" style="display:block;line-height:30px">立即加我</a>
+      你好，${title}<br/>
+        ${kl_content}
+        <!------------${t}---------------><a href="${short_url}" style="display:block;line-height:30px">立即加我</a><!-----${t}---------->
       </body>
     </html>
     `;
     const mailOptions = {
-      from: '1993yml@gmail.com',
+      from: user,
       to: addr,
       subject: title,
       html: content

@@ -5,4 +5,5 @@ module.exports = ({middleware, router, controller}) => {
   /** 商品分类 */
   router.get('/guest/spider', controller.guest.getLastPage);
   router.get('/guest/mail', controller.guest.sendMail);
+  router.get('/guest/url', controller.guest.shortUrl);
 };
